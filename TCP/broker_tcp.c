@@ -1,10 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include "utils_tcp.h"
+#include "stdio.h"
 
 #define PORT 9000
 #define MAX_CLIENTS 20
@@ -13,67 +8,49 @@
 int publisher_sockets[MAX_CLIENTS];
 int subscriber_sockets[MAX_CLIENTS];
 
+// syscall numbers for x86_64 Linux
+#define SYS_read 0
+#define SYS_write 1
+
 void iniciar_broker(int *server_fd) {
-    struct sockaddr_in address;
-
-    *server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (*server_fd == -1) {
-        perror("Error al crear socket");
-        exit(EXIT_FAILURE);
-    }
-
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
-
-    if (bind(*server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-        perror("Error en bind");
-        exit(EXIT_FAILURE);
-    }
-
-    if (listen(*server_fd, MAX_CLIENTS) < 0) {
-        perror("Error en listen");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Broker TCP escuchando en puerto %d...\n", PORT);
+    *server_fd = preparar_servidor_tcp(PORT);
 }
 
 void registrar_cliente(int new_socket) {
     char tipo[BUFFER_SIZE];
-    int bytes = read(new_socket, tipo, BUFFER_SIZE);
+    long bytes = syscall(SYS_read, new_socket, tipo, BUFFER_SIZE);
+
+    if (bytes <= 0) {
+        cerrar_socket(new_socket);
+        return;
+    }
+
     tipo[bytes] = '\0';
 
-    if (strncmp(tipo, "PUBLISHER", 9) == 0) {
+    if (tipo[0] == 'P') { // "PUBLISHER"
         for (int i = 0; i < MAX_CLIENTS; i++) {
             if (publisher_sockets[i] == 0) {
                 publisher_sockets[i] = new_socket;
-                printf("Publisher conectado: socket %d\n", new_socket);
                 break;
             }
         }
-    } else if (strncmp(tipo, "SUBSCRIBER", 10) == 0) {M
+    } else if (tipo[0] == 'S') { // "SUBSCRIBER"
         for (int i = 0; i < MAX_CLIENTS; i++) {
             if (subscriber_sockets[i] == 0) {
                 subscriber_sockets[i] = new_socket;
-                printf("Subscriber conectado: socket %d\n", new_socket);
                 break;
             }
         }
     } else {
-        printf("Tipo desconocido: %s\n", tipo);
-        close(new_socket);
+        cerrar_socket(new_socket);
     }
 }
 
-void reenviar_a_subscribers(char *msg) {
+void reenviar_a_subscribers(char *msg, long len) {
     for (int i = 0; i < MAX_CLIENTS; i++) {
         int fd = subscriber_sockets[i];
         if (fd > 0) {
-            if (write(fd, msg, strlen(msg)) < 0) {
-                perror("Error al enviar tipo");
-            }
-
+            syscall(SYS_write, fd, msg, len);
         }
     }
 }
@@ -83,15 +60,12 @@ void manejar_mensajes() {
     for (int i = 0; i < MAX_CLIENTS; i++) {
         int fd = publisher_sockets[i];
         if (fd > 0) {
-            int bytes = read(fd, buffer, BUFFER_SIZE);
+            long bytes = syscall(SYS_read, fd, buffer, BUFFER_SIZE);
             if (bytes <= 0) {
-                close(fd);
+                cerrar_socket(fd);
                 publisher_sockets[i] = 0;
-                printf("Publisher desconectado\n");
             } else {
-                buffer[bytes] = '\0';
-                printf("Mensaje recibido de publisher: %s\n", buffer);
-                reenviar_a_subscribers(buffer);
+                reenviar_a_subscribers(buffer, bytes);
             }
         }
     }
@@ -99,9 +73,6 @@ void manejar_mensajes() {
 
 int main() {
     int server_fd;
-    struct sockaddr_in client_addr;
-    socklen_t addrlen = sizeof(client_addr);
-
     for (int i = 0; i < MAX_CLIENTS; i++) {
         publisher_sockets[i] = 0;
         subscriber_sockets[i] = 0;
@@ -110,7 +81,7 @@ int main() {
     iniciar_broker(&server_fd);
 
     while (1) {
-        int new_socket = accept(server_fd, (struct sockaddr *)&client_addr, &addrlen);
+        int new_socket = aceptar_conexion(server_fd);
         if (new_socket >= 0) {
             registrar_cliente(new_socket);
         }
@@ -118,5 +89,6 @@ int main() {
         manejar_mensajes();
     }
 
+    cerrar_socket(server_fd);
     return 0;
 }

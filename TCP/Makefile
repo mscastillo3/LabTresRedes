@@ -1,33 +1,31 @@
-# Nombre de los ejecutables
+
+CC = gcc
+CFLAGS = -Wall -Wextra -O2
+UTILS_SRC = utils_tcp.c
+UTILS_HEADER = utils_tcp.h
+
+
 BROKER = broker
 PUBLISHER = publisher
 SUBSCRIBER = subscriber
 
-# Archivos fuente
-UTILS_SRC = tcp_utils.c
-UTILS_HEADER = tcp_utils.h
 
-# Compilador y flags
-CC = gcc
-CFLAGS = -Wall -Wextra -O2
-
-# Objetivos por defecto
 all: $(BROKER) $(PUBLISHER) $(SUBSCRIBER)
 
-$(BROKER): broker_tcp.c 
-	$(CC) $(CFLAGS) broker_tcp.c  -o $(BROKER)
+$(BROKER): broker_tcp.c $(UTILS_SRC) $(UTILS_HEADER)
+	$(CC) $(CFLAGS) broker_tcp.c $(UTILS_SRC) -o $(BROKER)
 
-$(PUBLISHER): publisher_tcp.c 
-	$(CC) $(CFLAGS) publisher_tcp.c -o $(PUBLISHER)
+$(PUBLISHER): publisher_tcp.c $(UTILS_SRC) $(UTILS_HEADER)
+	$(CC) $(CFLAGS) publisher_tcp.c $(UTILS_SRC) -o $(PUBLISHER)
 
-$(SUBSCRIBER): subscriber_tcp.c  
-	$(CC) $(CFLAGS) subscriber_tcp.c  -o $(SUBSCRIBER)
+$(SUBSCRIBER): subscriber_tcp.c $(UTILS_SRC) $(UTILS_HEADER)
+	$(CC) $(CFLAGS) subscriber_tcp.c $(UTILS_SRC) -o $(SUBSCRIBER)
 
-# Limpiar archivos compilados
+
 clean:
 	rm -f $(BROKER) $(PUBLISHER) $(SUBSCRIBER)
 
-# Ejecutar cada componente
+
 run-broker:
 	./$(BROKER)
 

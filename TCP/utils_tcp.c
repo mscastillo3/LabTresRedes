@@ -1,54 +1,64 @@
-#include "tcp_utils.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include "utils_tcp.h"
 
-int crear_socket() {
-    int fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd < 0) {
-        perror("Error al crear socket");
-        exit(EXIT_FAILURE);
-    }
-    return fd;
+#define SYS_socket     41
+#define SYS_bind       49
+#define SYS_listen     50
+#define SYS_accept     43
+#define SYS_connect    42
+#define SYS_close      3
+
+#define AF_INET        2
+#define SOCK_STREAM    1
+#define INADDR_ANY     0
+
+typedef unsigned long size_t;
+typedef unsigned short sa_family_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+
+struct sockaddr_in {
+    sa_family_t    sin_family;
+    uint16_t       sin_port;
+    uint32_t       sin_addr;
+    char           sin_zero[8];
+};
+
+long syscall(long number, ...);
+
+int crear_socket_tcp() {
+    return syscall(SYS_socket, AF_INET, SOCK_STREAM, 0);
 }
 
-int conectar_a(const char *ip, int puerto) {
-    int fd = crear_socket();
+int preparar_servidor_tcp(int puerto) {
+    int sock_fd = crear_socket_tcp();
     struct sockaddr_in addr;
 
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(puerto);
-    addr.sin_addr.s_addr = inet_addr(ip);
+    addr.sin_port = ((puerto & 0xFF) << 8) | ((puerto >> 8) & 0xFF); // htons manual
+    addr.sin_addr = INADDR_ANY;
 
-    if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        perror("Error al conectar");
-        close(fd);
-        return -1;
-    }
+    syscall(SYS_bind, sock_fd, &addr, sizeof(addr));
+    syscall(SYS_listen, sock_fd, 10);
 
-    return fd;
+    return sock_fd;
 }
 
-int enviar(int fd, const char *msg) {
-    int len = strlen(msg);
-    int sent = write(fd, msg, len);
-    if (sent < 0) {
-        perror("Error al enviar");
-        return -1;
-    }
-    return sent;
+int aceptar_conexion(int servidor_fd) {
+    return syscall(SYS_accept, servidor_fd, 0, 0);
 }
 
-int recibir(int fd, char *buffer, int size) {
-    int bytes = read(fd, buffer, size);
-    if (bytes < 0) {
-        perror("Error al recibir");
-        return -1;
-    }
-    buffer[bytes] = '\0';
-    return bytes;
+int conectar_a_servidor(const unsigned int ip, int puerto) {
+    int sock_fd = crear_socket_tcp();
+    struct sockaddr_in addr;
+
+    addr.sin_family = AF_INET;
+    addr.sin_port = ((puerto & 0xFF) << 8) | ((puerto >> 8) & 0xFF); // htons manual
+    addr.sin_addr = ip;
+
+    syscall(SYS_connect, sock_fd, &addr, sizeof(addr));
+    return sock_fd;
+}
+
+void cerrar_socket(int sock_fd) {
+    syscall(SYS_close, sock_fd);
 }
