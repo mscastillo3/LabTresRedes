@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <winsock2.h> // Creacion de sockets nativa de windows
+#include <ws2tcpip.h> // Manejo de direcciones IP en windows
 #include <time.h>
-
 #pragma comment(lib, "ws2_32.lib")
 
 #define MAX_MSG_LEN 512
@@ -68,8 +67,6 @@ int main(int argc, char *argv[]) {
         sendto(sockfd, buffer_envio, strlen(buffer_envio), 0, (struct sockaddr*)&broker_addr, sizeof(broker_addr));
         printf("[PUBLISHER] Mensaje enviado: %s\n", buffer_envio);
         msg_id++;
-
-        Sleep(2000); // Esperar 2 segundos
     }
 
     printf("[PUBLISHER] Fin del archivo %s.\n", archivo);

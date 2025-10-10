@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <winsock2.h> // Creacion de sockets nativa de windows
+#include <ws2tcpip.h> // Manejo de direcciones IP en windows
 #pragma comment(lib, "ws2_32.lib")  
 
 #define MAX_MSG_LEN 512
@@ -98,8 +98,7 @@ int main(int argc, char *argv[]) {
                 // Reenviar a los subscriptores interesados
                 for (int i = 0; i < subscriber_count; i++) {
                     if (strcmp(subscribers[i].topic, topic) == 0) {
-                        sendto(sockfd, mensaje, strlen(mensaje), 0,
-                               (struct sockaddr*)&subscribers[i].addr, sizeof(subscribers[i].addr));
+                        sendto(sockfd, mensaje, strlen(mensaje), 0, (struct sockaddr*)&subscribers[i].addr, sizeof(subscribers[i].addr));
                     }
                 }
             }

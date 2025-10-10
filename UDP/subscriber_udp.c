@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <winsock2.h> // Creacion de sockets nativa de windows
+#include <ws2tcpip.h> // Manejo de direcciones IP en windows
 #pragma comment(lib, "ws2_32.lib")
 
 #define MAX_MSG_LEN 512
