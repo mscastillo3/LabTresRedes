@@ -3,7 +3,6 @@
 #include <string.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-
 #pragma comment(lib, "ws2_32.lib")
 
 #define MAX_MSG_LEN 512
@@ -42,14 +41,14 @@ int main(int argc, char *argv[]) {
     memset(&broker_addr, 0, sizeof(broker_addr));
     broker_addr.sin_family = AF_INET;
     broker_addr.sin_port = htons(port);
-    inet_pton(AF_INET, broker_ip, &broker_addr.sin_addr);
+    broker_addr.sin_addr.s_addr = inet_addr(broker_ip);
 
     // Enviar mensaje de suscripción
-    snprintf(msg, sizeof(msg), "SUB|%s", topic);
+    snprintf(msg, sizeof(msg), "SUBSCRIBER|%s", topic);
     sendto(sockfd, msg, strlen(msg), 0,
            (struct sockaddr*)&broker_addr, sizeof(broker_addr));
 
-    printf("[SUBSCRIBER UDP] Suscrito al topic %s en %s:%d\n", topic, broker_ip, port);
+    printf("[SUBSCRIBER] Suscrito al partido %s\n", topic);
 
     // Recibir mensajes del broker
     while (1) {

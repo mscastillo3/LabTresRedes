@@ -11,16 +11,16 @@
 
 int main(int argc, char *argv[]) {
 
-    if (argc != 4) {
-        printf("Uso: %s <IP_BROKER> <PUERTO> <TOPIC>\n", argv[0]);
+    if (argc != 5) {
+        printf("Uso: %s <IP_BROKER> <PUERTO> <TOPIC> <ARCHIVO_MENSAJES>\n", argv[0]);
         return 1;
     }
 
     char *broker_ip = argv[1];
     int port = atoi(argv[2]);
     char *topic = argv[3];
+    char *archivo = argv[4];
 
-    // Inicializar Winsock
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
         printf("Error al inicializar Winsock.\n");
@@ -29,9 +29,9 @@ int main(int argc, char *argv[]) {
 
     SOCKET sockfd;
     struct sockaddr_in broker_addr;
-    char msg[MAX_MSG_LEN];
+    char buffer_envio[MAX_MSG_LEN];
+    int msg_id = 1;
 
-    // Crear socket UDP
     sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sockfd == INVALID_SOCKET) {
         printf("Error al crear socket.\n");
@@ -39,32 +39,44 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Configurar dirección del broker
     memset(&broker_addr, 0, sizeof(broker_addr));
     broker_addr.sin_family = AF_INET;
     broker_addr.sin_port = htons(port);
-    inet_pton(AF_INET, broker_ip, &broker_addr.sin_addr);
+    broker_addr.sin_addr.s_addr = inet_addr(broker_ip);
 
-    printf("[PUBLISHER UDP] Enviando a %s:%d topic %s\n", broker_ip, port, topic);
-
-    // Enviar 10 mensajes de ejemplo
-    for (int i = 1; i <= 10; i++) {
-        char timestamp[30];
-        time_t now = time(NULL);
-        struct tm *t = localtime(&now);
-        strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", t);
-
-        snprintf(msg, sizeof(msg), "PUB|%s|%d|%s|Evento %d en %s",
-                 topic, i, timestamp, i, topic);
-
-        sendto(sockfd, msg, strlen(msg), 0,
-               (struct sockaddr*)&broker_addr, sizeof(broker_addr));
-
-        printf("[PUBLISHER] Mensaje enviado: %s\n", msg);
-        Sleep(1000); // Esperar 1 segundo
+    // Abrir archivo de mensajes
+    FILE *file = fopen(archivo, "r");
+    if (!file) {
+        printf("Error al abrir el archivo %s\n", archivo);
+        closesocket(sockfd);
+        WSACleanup();
+        return 1;
     }
 
+    printf("[PUBLISHER] Enviando a %s:%d informacion sobre el Partido %s\n", broker_ip, port, topic);
+
+    char mensaje[MAX_MSG_LEN];
+    while (fgets(mensaje, sizeof(mensaje), file)) {
+        mensaje[strcspn(mensaje, "\n")] = '\0';  // quitar salto de línea
+
+        // Generar timestamp
+        time_t t = time(NULL);
+        struct tm *tm_info = localtime(&t);
+        char hora[10]; 
+        strftime(hora, sizeof(hora), "%H:%M:%S", tm_info);
+        snprintf(buffer_envio, sizeof(buffer_envio), "PUBLISHER|%s|%s|%s", topic, hora, mensaje);
+        sendto(sockfd, buffer_envio, strlen(buffer_envio), 0, (struct sockaddr*)&broker_addr, sizeof(broker_addr));
+        printf("[PUBLISHER] Mensaje enviado: %s\n", buffer_envio);
+        msg_id++;
+
+        Sleep(2000); // Esperar 2 segundos
+    }
+
+    printf("[PUBLISHER] Fin del archivo %s.\n", archivo);
+
+    fclose(file);
     closesocket(sockfd);
     WSACleanup();
+
     return 0;
 }

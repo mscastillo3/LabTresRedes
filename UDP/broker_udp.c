@@ -65,10 +65,7 @@ int main(int argc, char *argv[]) {
     // Bucle principal de recepción
     while (1) {
         memset(buffer, 0, sizeof(buffer));
-
-        int n = recvfrom(sockfd, buffer, MAX_MSG_LEN, 0,
-                         (struct sockaddr*)&client_addr, &addr_len);
-
+        int n = recvfrom(sockfd, buffer, MAX_MSG_LEN, 0,(struct sockaddr*)&client_addr, &addr_len);
         if (n == SOCKET_ERROR) {
             printf("Error al recibir mensaje.\n");
             continue;
@@ -77,33 +74,33 @@ int main(int argc, char *argv[]) {
         buffer[n] = '\0'; // Añadir terminador de cadena
 
         // Si el mensaje comienza con "SUB|"
-        if (strncmp(buffer, "SUB|", 4) == 0) {
-            char *topic = buffer + 4;
+        if (strncmp(buffer, "SUBSCRIBER|", 11) == 0) {
+            char *topic = buffer + 11;
 
             if (subscriber_count < MAX_SUBS) {
                 strcpy(subscribers[subscriber_count].topic, topic);
                 subscribers[subscriber_count].addr = client_addr;
                 subscriber_count++;
-
-                printf("[BROKER] Nuevo subscriptor a '%s' (%s:%d)\n",
-                    topic,
-                    inet_ntoa(client_addr.sin_addr),
-                    ntohs(client_addr.sin_port));
+                printf("[BROKER] Nuevo subscriptor a 'Partido %s'\n", topic);
             }
 
-        } else if (strncmp(buffer, "PUB|", 4) == 0) {
-            // Mensaje publicado
-            char *topic = strtok(buffer + 4, "|");
-            char *rest = strtok(NULL, "");
+        }
+        // 🔹 Procesar publicación
+        else if (strncmp(buffer, "PUBLISHER|", 10) == 0) {
 
-            printf("[BROKER] Publicación recibida en topic '%s': %s\n", topic, rest);
+            char *topic = strtok(buffer + 10, "|");
+            char *hora = strtok(NULL, "|");
+            char *mensaje = strtok(NULL, "");
 
-            // Reenviar a los subscriptores interesados
-            for (int i = 0; i < subscriber_count; i++) {
-                if (strcmp(subscribers[i].topic, topic) == 0) {
-                    sendto(sockfd, rest, strlen(rest), 0,
-                           (struct sockaddr*)&subscribers[i].addr,
-                           sizeof(subscribers[i].addr));
+            if (topic && hora && mensaje) {
+                printf("[BROKER] Publicacion recibida del partido '%s': %s|%s\n", topic, hora, mensaje);
+
+                // Reenviar a los subscriptores interesados
+                for (int i = 0; i < subscriber_count; i++) {
+                    if (strcmp(subscribers[i].topic, topic) == 0) {
+                        sendto(sockfd, mensaje, strlen(mensaje), 0,
+                               (struct sockaddr*)&subscribers[i].addr, sizeof(subscribers[i].addr));
+                    }
                 }
             }
         }
