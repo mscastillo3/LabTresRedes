@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>             // read(), write(), close()
-#include <sys/socket.h>         // socket(), connect()
-#include <netinet/in.h>         // sockaddr_in
-#include <arpa/inet.h>          // inet_addr()
-#include <time.h>               // time(), localtime(), strftime()
+#include <unistd.h>             
+#include <sys/socket.h>         
+#include <netinet/in.h>         
+#include <arpa/inet.h>          
+#include <time.h>               
 
 #define BROKER_IP "127.0.0.1"
 #define BROKER_PORT 9000

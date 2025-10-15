@@ -3,6 +3,30 @@
 
 ## Ejecución TCP
 
+Para ejecutar TCP se creo un archvio make el cual simplifica la compilacion y la ejecucion de los diferentes archvios.
+
+### Requisitos 
+* Sistema operativo Linux
+* Compilador GCC (Correr los comandos: sudo apt update, sudo apt install build-essential)
+
+### Compilación 
+
+En caso de modificaciones al codigo fuente  se deben recompilar los programas. Ubíquese en la carpeta del proyecto (/TCP) y ejecute los siguientes comandos en la terminal:
+
+* make
+
+### Ejecución del protocolo (En la misma maquina)
+
+Para ejecutar el protocolo en la misma maquina, abra cinco ventanas del terminal (una por programa) y ejecútelos en el siguiente orden:
+
+1. make run-broker
+2. make run-subscriber
+3. make run-subscriber2
+4. make run-publisher
+5. make run-publisher2
+
+Con esto generas dos subscriptores, dos publicadores y un boreker si se quieren generar más se pueden añadir al archivo make fiel que tiene los comandos.
+
 ## Ejecución UDP 
 
 ### Requisitos 
