@@ -1,9 +1,8 @@
 # LabTresRedes
 
-
 ## Ejecución TCP
 
-Para ejecutar TCP se creo un archvio make el cual simplifica la compilacion y la ejecucion de los diferentes archvios.
+Para ejecutar TCP se creo un archivo make el cual simplifica la compilacion y la ejecucion de los diferentes archivos.
 
 ### Requisitos 
 * Sistema operativo Linux
