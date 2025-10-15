@@ -29,10 +29,16 @@ clean:
 
 # Ejecutar cada componente
 run-broker:
-	./$(BROKER)
+	./$(BROKER) 
 
 run-publisher:
-	./$(PUBLISHER)
+	./$(PUBLISHER) Partido1.txt 1
 
 run-subscriber:
-	./$(SUBSCRIBER)
+	./$(SUBSCRIBER) 1
+
+run-publisher2:
+	./$(PUBLISHER) Partido2.txt 2
+
+run-subscriber2:
+	./$(SUBSCRIBER) 2
