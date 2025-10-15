@@ -31,6 +31,7 @@ int main(int argc, char *argv[]) {
     char buffer_envio[MAX_MSG_LEN];
     int msg_id = 1;
 
+    // Crear socket 
     sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sockfd == INVALID_SOCKET) {
         printf("Error al crear socket.\n");
@@ -56,9 +57,8 @@ int main(int argc, char *argv[]) {
 
     char mensaje[MAX_MSG_LEN];
     while (fgets(mensaje, sizeof(mensaje), file)) {
-        mensaje[strcspn(mensaje, "\n")] = '\0';  // quitar salto de línea
+        mensaje[strcspn(mensaje, "\n")] = '\0';  
 
-        // Generar timestamp
         time_t t = time(NULL);
         struct tm *tm_info = localtime(&t);
         char hora[10]; 

@@ -19,7 +19,6 @@ int subscriber_count = 0;
 
 int main(int argc, char *argv[]) {
 
-    // Verificación de argumentos
     if (argc != 2) {
         printf("Uso: %s <PUERTO>\n", argv[0]);
         return 1;
@@ -38,7 +37,7 @@ int main(int argc, char *argv[]) {
     char buffer[MAX_MSG_LEN];
     int addr_len = sizeof(client_addr);
 
-    // Crear socket UDP
+    // Crear socket 
     sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sockfd == INVALID_SOCKET) {
         printf("Error al crear socket.\n");
@@ -60,20 +59,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("[BROKER UDP] Escuchando en puerto %d...\n", port);
+    printf("[BROKER] Escuchando en puerto %d...\n", port);
 
     // Bucle principal de recepción
     while (1) {
         memset(buffer, 0, sizeof(buffer));
         int n = recvfrom(sockfd, buffer, MAX_MSG_LEN, 0,(struct sockaddr*)&client_addr, &addr_len);
-        if (n == SOCKET_ERROR) {
-            printf("Error al recibir mensaje.\n");
-            continue;
-        }
+        buffer[n] = '\0';
 
-        buffer[n] = '\0'; // Añadir terminador de cadena
-
-        // Si el mensaje comienza con "SUB|"
         if (strncmp(buffer, "SUBSCRIBER|", 11) == 0) {
             char *topic = buffer + 11;
 
@@ -85,7 +78,6 @@ int main(int argc, char *argv[]) {
             }
 
         }
-        // 🔹 Procesar publicación
         else if (strncmp(buffer, "PUBLISHER|", 10) == 0) {
 
             char *topic = strtok(buffer + 10, "|");

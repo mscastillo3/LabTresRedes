@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     char buffer[MAX_MSG_LEN];
     char msg[MAX_MSG_LEN];
 
-    // Crear socket UDP
+    // Crear socket 
     sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sockfd == INVALID_SOCKET) {
         printf("Error al crear socket.\n");
@@ -37,13 +37,12 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Configurar dirección del broker
     memset(&broker_addr, 0, sizeof(broker_addr));
     broker_addr.sin_family = AF_INET;
     broker_addr.sin_port = htons(port);
     broker_addr.sin_addr.s_addr = inet_addr(broker_ip);
 
-    // Enviar mensaje de suscripción
+    // Enviar mensaje de suscripcion
     snprintf(msg, sizeof(msg), "SUBSCRIBER|%s", topic);
     sendto(sockfd, msg, strlen(msg), 0,
            (struct sockaddr*)&broker_addr, sizeof(broker_addr));
