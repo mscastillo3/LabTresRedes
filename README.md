@@ -38,7 +38,7 @@ En caso de modificaciones al codigo fuente  se deben recompilar los programas. U
 
 * gcc broker_udp.c -o broker_udp.exe -lws2_32 (Compilar  el Broker)
 * gcc subscriber_udp.c -o subscriber_udp.exe -lws2_32 (Compilar  el Subscriber)
-* gcc publisher_udp.c -o publisher_from_file.exe -lws2_32 (Compilar  el Publisher)
+* gcc publisher_udp.c -o publisher_udp.exe -lws2_32 (Compilar  el Publisher)
 
 ### Ejecución del protocolo (En la misma maquina)
 
@@ -47,8 +47,8 @@ Para ejecutar el protocolo en la misma maquina, abra cinco ventanas del terminal
 1. .\broker_udp.exe 5000 (Broker) 
 2. .\subscriber_udp.exe 127.0.0.1 5000 "Equipo A vs Equipo B" (Subscriber 1)
 3. .\subscriber_udp.exe 127.0.0.1 5000 "Equipo C vs Equipo D" (Subscriber 2)
-4. .\publisher_from_file.exe 127.0.0.1 5000 "Equipo A vs Equipo B" Partido1.txt (Publisher 1)
-5. .\publisher_from_file.exe 127.0.0.1 5000 "Equipo C vs Equipo D" Partido2.txt (Publisher 2)
+4. .\publisher_udp.exe 127.0.0.1 5000 "Equipo A vs Equipo B" Partido1.txt (Publisher 1)
+5. .\publisher_udp.exe 127.0.0.1 5000 "Equipo C vs Equipo D" Partido2.txt (Publisher 2)
 
 ### Ejecucion del protocolo (En diferentes maquinas)
 
@@ -57,8 +57,8 @@ Para ejecutar el protocolo en diferentes maquinas. Primero debe obtener la IP lo
 1. .\broker_udp.exe 5000 (Broker) 
 2. .\subscriber_udp.exe (Reemplazar por la IP del Broker) 5000 "Equipo A vs Equipo B" (Subscriber 1)
 3. .\subscriber_udp.exe (Reemplazar por la IP del Broker) 5000 "Equipo C vs Equipo D" (Subscriber 2)
-4. .\publisher_from_file.exe (Reemplazar por la IP del Broker) 5000 "Equipo A vs Equipo B" Partido1.txt (Publisher 1)
-5. .\publisher_from_file.exe (Reemplazar por la IP del Broker) 5000 "Equipo C vs Equipo D" Partido2.txt (Publisher 2)
+4. .\publisher_udp.exe (Reemplazar por la IP del Broker) 5000 "Equipo A vs Equipo B" Partido1.txt (Publisher 1)
+5. .\publisher_udp.exe (Reemplazar por la IP del Broker) 5000 "Equipo C vs Equipo D" Partido2.txt (Publisher 2)
 
 
 
