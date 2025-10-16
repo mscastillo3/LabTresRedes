@@ -2,8 +2,6 @@
 
 ## Ejecución TCP
 
-Para ejecutar TCP se creo un archivo make el cual simplifica la compilacion y la ejecucion de los diferentes archivos.
-
 ### Requisitos 
 * Sistema operativo Linux
 * Compilador GCC (Correr los comandos: sudo apt update, sudo apt install build-essential)
@@ -12,19 +10,21 @@ Para ejecutar TCP se creo un archivo make el cual simplifica la compilacion y la
 
 En caso de modificaciones al codigo fuente  se deben recompilar los programas. Ubíquese en la carpeta del proyecto (/TCP) y ejecute el siguiente comando en la terminal:
 
-* make
+* gcc broker_tcp.c -o broker_tcp.exe -lws2_32 
+* gcc subscriber_tcp.c -o subscriber_tcp.exe -lws2_32 
+* gcc publisher_tcp.c -o publisher_tcp.exe -lws2_32 
 
 ### Ejecución del protocolo 
 
 Para ejecutar el protocolo, abra cinco ventanas del terminal (una por programa) y ejecútelos en el siguiente orden:
 
-1. make run-broker
-2. make run-subscriber
-3. make run-subscriber2
-4. make run-publisher
-5. make run-publisher2
+1. .\broker_tcp.exe
+2. .\subscriber_tcp.exe 1
+3. .\subscriber_tcp.exe 2
+4. .\publisher_tcp.exe Partido1.txt 1
+5. .\publisher_tcp.exe Partido2.txt 2
 
-Con esto generas dos subscriptores, dos publicadores y un broker si se quieren generar más se pueden añadir al archivo make fiel que tiene los comandos.
+Con esto generas dos subscriptores, dos publicadores y un broker si se quieren generar más se coloca el comando para crear uno nuevo.
 
 ## Ejecución UDP 
 
