@@ -7,7 +7,7 @@
 #pragma comment(lib, "ws2_32.lib")  // Enlaza la librería de Winsock
 
 #define BROKER_IP "127.0.0.1"
-#define BROKER_PORT 9000
+#define BROKER_PORT 8000
 #define BUFFER_SIZE 1024
 
 int main(int argc, char *argv[]) {
