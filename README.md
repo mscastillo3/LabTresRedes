@@ -1,9 +1,8 @@
 # LabTresRedes
 
-
 ## Ejecución TCP
 
-Para ejecutar TCP se creo un archvio make el cual simplifica la compilacion y la ejecucion de los diferentes archvios.
+Para ejecutar TCP se creo un archivo make el cual simplifica la compilacion y la ejecucion de los diferentes archivos.
 
 ### Requisitos 
 * Sistema operativo Linux
@@ -11,13 +10,13 @@ Para ejecutar TCP se creo un archvio make el cual simplifica la compilacion y la
 
 ### Compilación 
 
-En caso de modificaciones al codigo fuente  se deben recompilar los programas. Ubíquese en la carpeta del proyecto (/TCP) y ejecute los siguientes comandos en la terminal:
+En caso de modificaciones al codigo fuente  se deben recompilar los programas. Ubíquese en la carpeta del proyecto (/TCP) y ejecute el siguiente comando en la terminal:
 
 * make
 
-### Ejecución del protocolo (En la misma maquina)
+### Ejecución del protocolo 
 
-Para ejecutar el protocolo en la misma maquina, abra cinco ventanas del terminal (una por programa) y ejecútelos en el siguiente orden:
+Para ejecutar el protocolo, abra cinco ventanas del terminal (una por programa) y ejecútelos en el siguiente orden:
 
 1. make run-broker
 2. make run-subscriber
@@ -25,7 +24,7 @@ Para ejecutar el protocolo en la misma maquina, abra cinco ventanas del terminal
 4. make run-publisher
 5. make run-publisher2
 
-Con esto generas dos subscriptores, dos publicadores y un boreker si se quieren generar más se pueden añadir al archivo make fiel que tiene los comandos.
+Con esto generas dos subscriptores, dos publicadores y un broker si se quieren generar más se pueden añadir al archivo make fiel que tiene los comandos.
 
 ## Ejecución UDP 
 
