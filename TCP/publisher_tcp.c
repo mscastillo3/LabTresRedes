@@ -1,14 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>             
-#include <sys/socket.h>         
-#include <netinet/in.h>         
-#include <arpa/inet.h>          
-#include <time.h>               
+#include <winsock2.h>      // Librería principal de sockets en Windows
+#include <ws2tcpip.h>      // Para inet_pton y funciones de red
+#include <time.h>
+#include <windows.h>       // Para Sleep()
+
+#pragma comment(lib, "ws2_32.lib")  // Vincula la librería de Winsock
 
 #define BROKER_IP "127.0.0.1"
-#define BROKER_PORT 9000
+#define BROKER_PORT 8000
 #define BUFFER_SIZE 1024
 
 int main(int argc, char *argv[]) {
@@ -20,36 +21,44 @@ int main(int argc, char *argv[]) {
     const char *archivo = argv[1];
     const char *partido = argv[2];
 
-    int sock_fd;
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        fprintf(stderr, "Error al iniciar Winsock.\n");
+        return EXIT_FAILURE;
+    }
+
+    SOCKET sock_fd;
     struct sockaddr_in broker_addr;
     char buffer_envio[BUFFER_SIZE];
 
     // Crear socket TCP
-    sock_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock_fd < 0) {
+    sock_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sock_fd == INVALID_SOCKET) {
         perror("Error al crear socket");
+        WSACleanup();
         return EXIT_FAILURE;
     }
 
-    // Configurar dirección del broker
     broker_addr.sin_family = AF_INET;
     broker_addr.sin_port = htons(BROKER_PORT);
     broker_addr.sin_addr.s_addr = inet_addr(BROKER_IP);
 
     // Conectar al broker
-    if (connect(sock_fd, (struct sockaddr *)&broker_addr, sizeof(broker_addr)) < 0) {
+    if (connect(sock_fd, (struct sockaddr *)&broker_addr, sizeof(broker_addr)) == SOCKET_ERROR) {
         perror("Error al conectar con el broker");
-        close(sock_fd);
+        closesocket(sock_fd);
+        WSACleanup();
         return EXIT_FAILURE;
     }
 
     printf("[PUBLISHER] Conectado al broker en %s:%d\n", BROKER_IP, BROKER_PORT);
 
-    // Identificarse como PUBLISHER con partido
+    // Enviar identificación como publisher
     snprintf(buffer_envio, sizeof(buffer_envio), "PUBLISHER|%s\n", partido);
-    if (write(sock_fd, buffer_envio, strlen(buffer_envio)) < 0) {
+    if (send(sock_fd, buffer_envio, (int)strlen(buffer_envio), 0) == SOCKET_ERROR) {
         perror("Error al enviar identificación");
-        close(sock_fd);
+        closesocket(sock_fd);
+        WSACleanup();
         return EXIT_FAILURE;
     }
 
@@ -57,7 +66,8 @@ int main(int argc, char *argv[]) {
     FILE *file = fopen(archivo, "r");
     if (!file) {
         perror("Error al abrir el archivo");
-        close(sock_fd);
+        closesocket(sock_fd);
+        WSACleanup();
         return EXIT_FAILURE;
     }
 
@@ -65,35 +75,34 @@ int main(int argc, char *argv[]) {
 
     char mensaje[BUFFER_SIZE];
     while (fgets(mensaje, sizeof(mensaje), file)) {
-        mensaje[strcspn(mensaje, "\n")] = '\0';  // quitar salto de línea
+        mensaje[strcspn(mensaje, "\n")] = '\0';  // eliminar salto de línea
 
-        // Generar timestamp
         time_t t = time(NULL);
         struct tm *tm_info = localtime(&t);
         char hora[9];  // HH:MM:SS
         strftime(hora, sizeof(hora), "%H:%M:%S", tm_info);
 
-        // Formatear mensaje
         char mensaje_limpio[900];
         strncpy(mensaje_limpio, mensaje, sizeof(mensaje_limpio) - 1);
         mensaje_limpio[sizeof(mensaje_limpio) - 1] = '\0';
 
-
         snprintf(buffer_envio, sizeof(buffer_envio), "PUBLISHER|%s|%s|%s\n", partido, hora, mensaje_limpio);
 
         // Enviar mensaje
-        if (write(sock_fd, buffer_envio, strlen(buffer_envio)) < 0) {
+        if (send(sock_fd, buffer_envio, (int)strlen(buffer_envio), 0) == SOCKET_ERROR) {
             perror("Error al enviar mensaje");
             break;
         }
 
         printf("[PUBLISHER] Mensaje enviado: %s\n", buffer_envio);
-        sleep(5);
+        Sleep(2000); // Esperar 2 segundos (Sleep usa milisegundos)
     }
 
     printf("[PUBLISHER] Fin del archivo '%s'. Cerrando conexión.\n", archivo);
 
     fclose(file);
-    close(sock_fd);
+    closesocket(sock_fd);
+    WSACleanup();
+
     return EXIT_SUCCESS;
 }
